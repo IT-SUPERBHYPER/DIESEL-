@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diesel Monitoring App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Define CSS Variables for Dark Mode as default */
+        :root {
+            --bg-body: #121212; /* Very dark solid background */
+            --color-text-primary: #e2e8f0; /* Light text */
+            --color-text-heading: #ffffff; /* White headings */
+            --bg-container: #2d3748; /* Dark container */
+            --border-input: #4a5568; /* Darker border */
+            --bg-input: #1a202c; /* Very dark input background */
+            --border-focus: #667eea; /* Lighter blue on focus */
+            --shadow-focus: rgba(102, 126, 234, 0.3);
+            --bg-button-primary: #667eea; /* Lighter blue for primary buttons */
+            --bg-button-primary-hover: #5a67d8;
+            --shadow-button-primary: rgba(102, 126, 234, 0.4);
+            --shadow-button-primary-hover: rgba(102, 126, 234, 0.5);
+            --bg-message-success: #2d6a4f; /* Darker green */
+            --bg-message-error: #9b2c2c; /* Darker red */
+            --bg-table-header: #4a5568; /* Darker table header */
+            --color-table-header: #cbd5e1; /* Lighter text */
+            --bg-table-row-even: #2d3748; /* Darker alternating rows */
+            --bg-table-row-hover: #4a5568;
+            --bg-modal: #1a202c;
+            --color-modal-heading: #ffffff;
+            --color-modal-text: #e2e8f0;
+            --bg-confirm-btn: #c53030;
+            --bg-confirm-btn-hover: #a02020;
+            --shadow-confirm-btn: rgba(197, 48, 48, 0.4);
+            --shadow-confirm-btn-hover: rgba(197, 48, 48, 0.5);
+            --bg-cancel-btn: #4a5568;
+            --color-cancel-btn: #e2e8f0;
+            --shadow-cancel-btn: rgba(74, 85, 104, 0.3);
+            --shadow-cancel-btn-hover: rgba(74, 85, 104, 0.4);
+            --bg-user-info: #4a5568; /* Darker user info background */
+            --color-user-info: #e2e8f0; /* Light text for user info */
+            --icon-color-car: #667eea; /* Lighter blue for car icon */
+            --icon-color-forklift: #fc8181; /* Lighter red for forklift icon */
+        }
+
+        /* Apply CSS Variables */
+        body {
+            background: var(--bg-body); /* Now uses solid color from variable */
+            color: var(--color-text-primary);
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .container {
+            background-color: var(--bg-container);
+            padding: 16px; /* Reduced padding for mobile */
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 950px;
+            margin-top: 16px; /* Adjusted margin */
+            margin-bottom: 16px; /* Adjusted margin */
+            border: none; /* Removed border */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .container {
+                padding: 32px; /* Adjusted padding for tablets and desktops */
+                margin-top: 30px;
+                margin-bottom: 30px;
+            }
+        }
+        h1, h2 {
+            color: var(--color-text-heading);
+        }
+        input[type="number"],
+        input[type="text"],
+        select {
+            border-color: var(--border-input);
+            background-color: var(--bg-input);
+            color: var(--color-text-primary); /* Ensure input text color changes */
+            padding: 8px 12px; /* Slimmer padding */
+            border-radius: 8px; /* Slightly less rounded */
+        }
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none; /* Ensure outline is removed */
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--shadow-focus); /* Slimmer focus shadow */
+        }
+        button {
+            background-color: var(--bg-button-primary);
+            box-shadow: 0 4px 10px var(--shadow-button-primary); /* Slimmer shadow */
+            padding: 10px 20px; /* Slimmer padding */
+            border-radius: 8px; /* Slightly less rounded */
+            font-weight: 600; /* Slightly less bold */
+            color: white; /* Ensure text color is white */
+            border: none; /* Ensure no border */
+            cursor: pointer; /* Ensure cursor is pointer */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Ensure transitions */
+        }
+        button:hover {
+            background-color: var(--bg-button-primary-hover);
+            transform: translateY(-1px); /* Subtle lift effect */
+            box-shadow: 0 6px 15px var(--shadow-button-primary-hover); /* Slightly less prominent hover shadow */
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px var(--shadow-button-primary); /* Slimmer active shadow */
+        }
+        .message-box {
+            position: fixed;
+            top: 20px; /* Adjusted position */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--bg-message-success); /* Default to success color */
+            color: white;
+            padding: 12px 20px; /* Slimmer message box */
+            border-radius: 8px; /* Slightly less rounded */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out;
+            font-weight: 500; /* Slightly less bold */
+        }
+        .message-box.show {
+            opacity: 1;
+            top: 40px; /* Drops down slightly */
+        }
+        .message-box.bg-red-500 { /* Override for error messages */
+            background-color: var(--bg-message-error);
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px; /* Adjusted margin */
+            border-radius: 10px; /* Slightly less rounded table corners */
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05); /* Slimmer table shadow */
+        }
+        th, td {
+            border: none; /* Ensure no individual cell borders */
+            padding: 10px 12px; /* Slimmer padding in table cells */
+            text-align: left;
+        }
+        th {
+            background-color: var(--bg-table-header);
+            font-weight: 600; /* Slightly less bold */
+            color: var(--color-table-header);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        tr:nth-child(even) {
+            background-color: var(--bg-table-row-even);
+        }
+        tr:hover {
+            background-color: var(--bg-table-row-hover);
+            transition: background-color 0.2s ease;
+        }
+        /* Specific styling for the first and last table headers/cells for rounded corners */
+        th:first-child { border-top-left-radius: 10px; }
+        th:last-child { border-top-right-radius: 10px; }
+        tr:last-child td:first-child { border-bottom-left-radius: 10px; }
+        tr:last-child td:last-child { border-bottom-right-radius: 10px; }
+
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.4s ease-in-out;
+        }
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background-color: var(--bg-modal);
+            padding: 20px; /* Slimmer padding for mobile */
+            border-radius: 15px; /* Slightly less rounded */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); /* Slimmer shadow */
+            text-align: center;
+            max-width: 400px; /* Slightly smaller max width */
+            width: 90%;
+            transform: translateY(-20px); /* Less drop down */
+            transition: transform 0.3s ease-in-out;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .modal-content {
+                padding: 30px; /* Adjusted padding for tablets and desktops */
+            }
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.6rem; /* Slightly smaller heading */
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--color-modal-heading);
+        }
+        .modal-content p {
+            color: var(--color-modal-text);
+            margin-bottom: 25px; /* Slightly less margin */
+            line-height: 1.5; /* Slightly tighter line height */
+        }
+        .modal-content .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Less space between buttons */
+            margin-top: 20px; /* Less margin */
+        }
+        .modal-content .button-group button {
+            padding: 10px 20px; /* Slimmer buttons */
+            border-radius: 8px; /* Slightly less rounded */
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            border: none;
+        }
+        .modal-content .button-group button.confirm-btn {
+            background-color: var(--bg-confirm-btn);
+            color: white;
+            box-shadow: 0 3px 8px var(--shadow-confirm-btn); /* Slimmer shadow */
+        }
+        .modal-content .button-group button.confirm-btn:hover {
+            background-color: var(--bg-confirm-btn-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px var(--shadow-confirm-btn-hover);
+        }
+        .modal-content .button-group button.cancel-btn {
+            background-color: var(--bg-cancel-btn);
+            color: var(--color-cancel-btn);
+            box-shadow: 0 3px 8px var(--shadow-cancel-btn); /* Slimmer shadow */
+        }
+        .modal-content .button-group button.cancel-btn:hover {
+            background-color: var(--bg-cancel-btn-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px var(--shadow-cancel-btn-hover);
+        }
+        /* SVG icon styling */
+        .vehicle-icon {
+            width: 28px; /* Slightly smaller icons */
+            height: 28px;
+            margin-left: 6px; /* Adjusted margin */
+            margin-right: 6px; /* Adjusted margin */
+        }
+        .vehicle-icon.car {
+            color: var(--icon-color-car);
+        }
+        .vehicle-icon.forklift {
+            color: var(--icon-color-forklift);
+        }
+        #user-info {
+            background-color: var(--bg-user-info);
+            color: var(--color-user-info);
+            padding: 10px; /* Slimmer padding */
+            border-radius: 8px; /* Slightly less rounded */
+        }
+        /* Added for stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-item {
+            background-color: var(--bg-input); /* Re-using input background for stat cards */
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-item strong {
+            display: block;
+            font-size: 1.5rem;
+            color: var(--color-text-heading);
+            margin-bottom: 0.25rem;
+        }
+        .stat-item span {
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+        }
+        /* Added for stats by registration */
+        .registration-stats-card {
+            background-color: var(--bg-input);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        .registration-stats-card h4 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--color-text-heading);
+            margin-bottom: 0.75rem;
+        }
+        .registration-stats-card p {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center mb-8">Diesel Monitoring Dashboard</h1>
+
+        <div id="user-info" class="text-center text-sm mb-6 p-3 rounded-lg">
+            Loading user info...
+        </div>
+
+        <div class="flex justify-center mb-6">
+            <button id="toggleStatsBtn" class="px-6 py-2">Show Statistics</button>
+        </div>
+
+        <div id="statsContainer" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">Summary Statistics</h2>
+            <div class="stats-grid mb-8">
+                <div class="stat-item">
+                    <strong id="totalDieselDispensed">0.00 L</strong>
+                    <span>Total Diesel Dispensed</span>
+                </div>
+                <div class="stat-item">
+                    <strong id="totalVehicleFills">0</strong>
+                    <span>Total Vehicle Fills</span>
+                </div>
+                <div class="stat-item">
+                    <strong id="averageDieselPerFill">0.00 L</strong>
+                    <span>Average Diesel per Fill</span>
+                </div>
+                <div class="stat-item">
+                    <strong id="totalKmDriven">0.00 km</strong>
+                    <span>Total Kilometers Driven (Cars)</span>
+                </div>
+                <div class="stat-item">
+                    <strong id="totalHoursRun">0.00 hours</strong>
+                    <span>Total Hours Run (Forklifts)</span>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-center mb-6">Statistics by Registration Number</h2>
+            <div id="statsByRegistration" class="mb-8">
+                <p id="noRegistrationStatsMessage" class="text-center text-gray-500 py-4 hidden">No detailed stats per registration found. Add vehicle records to see them!</p>
+                </div>
+        </div>
+
+
+        <h2 class="text-2xl font-bold text-center mb-6">Vehicle Diesel Records</h2>
+        <form id="dieselForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            
+            <div class="col-span-1">
+                <label for="registrationNo" class="block text-sm font-medium mb-1">Registration No.:</label>
+                <input type="text" id="registrationNo" name="registrationNo" required class="w-full">
+            </div>
+
+            <div class="col-span-1">
+                <label for="operatorName" class="block text-sm font-medium mb-1">Operator Name:</label>
+                <input type="text" id="operatorName" name="operatorName" required class="w-full">
+            </div>
+
+            <div class="col-span-1">
+                <label for="bowserMeterOpening" class="block text-sm font-medium mb-1">Bowser Meter Opening Reading (L):</label>
+                <input type="number" id="bowserMeterOpening" name="bowserMeterOpening" step="0.01" min="0" required class="w-full">
+            </div>
+            <div class="col-span-1">
+                <label for="bowserMeterClosing" class="block text-sm font-medium mb-1">Bowser Meter Closing Reading (L):</label>
+                <input type="number" id="bowserMeterClosing" name="bowserMeterClosing" step="0.01" min="0" required class="w-full">
+            </div>
+
+            <div class="col-span-1">
+                <label class="block text-sm font-medium mb-1">Vehicle Type:</label>
+                <div class="flex items-center space-x-3 mt-2">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="vehicleType" value="car" checked class="form-radio h-4 w-4">
+                        <svg class="vehicle-icon car" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h10m-9 4h8a2 2 0 002-2v-3a2 2 0 00-2-2H7a2 2 0 00-2 2v3a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="font-medium">Car</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="vehicleType" value="forklift" class="form-radio h-4 w-4">
+                        <svg class="vehicle-icon forklift" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l-1.616 1.139a4.995 4.995 0 00-3.328 0L3 14m0 0l1.616 1.139a4.995 4.995 0 003.328 0L12 14m0 0l-1.616 1.139a4.995 4.995 0 00-3.328 0L3 14"></path>
+                        </svg>
+                        <span class="font-medium">Forklift</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="col-span-1">
+                <label for="vehicleIdentifier" id="vehicleIdentifierLabel" class="block text-sm font-medium mb-1">Car Kilometers (km):</label>
+                <input type="number" id="vehicleIdentifier" name="vehicleIdentifier" step="0.01" min="0" required class="w-full">
+            </div>
+
+            <div class="col-span-full flex justify-center mt-4">
+                <button type="submit" class="px-8 py-3">Record Vehicle Diesel Fill</button>
+            </div>
+        </form>
+
+        <div class="flex flex-wrap justify-center gap-3 mb-6">
+            <button id="exportVehicleCsvBtn" class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md">Export Vehicle CSV</button>
+            <button id="exportVehiclePdfBtn" class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-md">Export Vehicle PDF</button>
+            <button id="clearAllVehicleDataBtn" class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-md">Clear All Vehicle Data</button>
+        </div>
+        <div class="overflow-x-auto rounded-lg shadow-sm mb-12">
+            <table id="recordsTable" class="min-w-full">
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Operator</th>
+                        <th>Vehicle Type</th>
+                        <th>Total Odometer/Hours</th>
+                        <th>Diff. Odometer/Hours</th>
+                        <th>Registration No.</th>
+                        <th>Opening Meter (L)</th>
+                        <th>Closing Meter (L)</th>
+                        <th>Diesel (L)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="noRecordsMessage" class="text-center text-gray-500 py-4 hidden">No vehicle records found. Start by adding a new entry!</p>
+        </div>
+
+        </div>
+
+    <div id="messageBox" class="message-box"></div>
+
+    <div id="confirmationModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Deletion</h3>
+            <p id="modalMessage">Are you sure you want to delete ALL records? This action cannot be undone.</p>
+            <div class="button-group">
+                <button id="confirmDeleteBtn" class="confirm-btn">Yes, Delete All</button>
+                <button id="cancelDeleteBtn" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+
+    <script type="module">
+        // Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, getDocs, deleteDoc, doc, serverTimestamp, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration (directly using the details you provided)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-8rm40H95HYpvWGdy6IY30OrNfuwNxCk",
+            authDomain: "superb-hyper-1c75b.firebaseapp.com",
+            projectId: "superb-hyper-1c75b",
+            storageBucket: "superb-hyper-1c75b.firebasestorage.app",
+            messagingSenderId: "879869345488",
+            appId: "1:879869345488:web:9b38b8130ea8561ef528d5",
+            measurementId: "G-JSYT6M60V5"
+        };
+
+        // Global variables for app ID (derived from projectId for consistency)
+        const appId = firebaseConfig.projectId;
+
+        let app, db, auth, userId = null;
+        let isAuthReady = false;
+        let currentVehicleRecords = []; // Store vehicle records globally for export functions
+
+        // Function to show a message box
+        function showMessageBox(message, type = 'success') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.style.backgroundColor = type === 'success' ? 'var(--bg-message-success)' : 'var(--bg-message-error)';
+            messageBox.classList.add('show');
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize Firebase and set up authentication listener
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    isAuthReady = true;
+                    document.getElementById('user-info').textContent = `Logged in as: ${userId}`;
+                    console.log("Firebase initialized and user authenticated:", userId);
+                    // Start listening for records only after auth is ready
+                    listenForVehicleRecords();
+                } else {
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (error) {
+                        console.error("Error signing in anonymously:", error);
+                        showMessageBox("Failed to sign in. Please ensure Anonymous authentication is enabled in Firebase.", 'error');
+                        isAuthReady = true;
+                        document.getElementById('user-info').textContent = `Authentication failed: ${error.message}`;
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            showMessageBox("Failed to initialize Firebase. Check console for details. Ensure API Key and Auth Domain are correct.", 'error');
+        }
+
+        // --- Vehicle Diesel Recording Elements ---
+        const dieselForm = document.getElementById('dieselForm');
+        const bowserMeterOpeningInput = document.getElementById('bowserMeterOpening');
+        const bowserMeterClosingInput = document.getElementById('bowserMeterClosing');
+        const vehicleTypeRadios = document.querySelectorAll('input[name="vehicleType"]');
+        const vehicleIdentifierLabel = document.getElementById('vehicleIdentifierLabel');
+        const vehicleIdentifierInput = document.getElementById('vehicleIdentifier');
+        const registrationNoInput = document.getElementById('registrationNo');
+        const operatorNameInput = document.getElementById('operatorName');
+        const recordsTableBody = document.querySelector('#recordsTable tbody');
+        const noRecordsMessage = document.getElementById('noRecordsMessage');
+        const exportVehicleCsvBtn = document.getElementById('exportVehicleCsvBtn');
+        const exportVehiclePdfBtn = document.getElementById('exportVehiclePdfBtn');
+        const clearAllVehicleDataBtn = document.getElementById('clearAllVehicleDataBtn');
+
+        // --- Stats Elements ---
+        const toggleStatsBtn = document.getElementById('toggleStatsBtn');
+        const statsContainer = document.getElementById('statsContainer');
+        const totalDieselDispensedSpan = document.getElementById('totalDieselDispensed');
+        const totalVehicleFillsSpan = document.getElementById('totalVehicleFills');
+        const averageDieselPerFillSpan = document.getElementById('averageDieselPerFill');
+        const totalKmDrivenSpan = document.getElementById('totalKmDriven');
+        const totalHoursRunSpan = document.getElementById('totalHoursRun');
+        const statsByRegistrationDiv = document.getElementById('statsByRegistration');
+        const noRegistrationStatsMessage = document.getElementById('noRegistrationStatsMessage');
+
+        // --- Global Modal Elements ---
+        const confirmationModal = document.getElementById('confirmationModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+        let collectionToDelete = ''; // To track which collection to clear
+
+        // Toggle visibility of stats sections
+        toggleStatsBtn.addEventListener('click', () => {
+            statsContainer.classList.toggle('hidden');
+            if (statsContainer.classList.contains('hidden')) {
+                toggleStatsBtn.textContent = 'Show Statistics';
+            } else {
+                toggleStatsBtn.textContent = 'Hide Statistics';
+            }
+        });
+
+        // Update vehicle identifier label based on vehicle type selection
+        vehicleTypeRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                if (event.target.value === 'car') {
+                    vehicleIdentifierLabel.textContent = 'Car Kilometers (km):';
+                    vehicleIdentifierInput.placeholder = 'e.g., 123456';
+                } else {
+                    vehicleIdentifierLabel.textContent = 'Forklift Hours:';
+                    vehicleIdentifierInput.placeholder = 'e.g., 5000';
+                }
+            });
+        });
+
+        // --- Vehicle Diesel Recording Logic ---
+
+        // Function to get the last recorded identifier for a given registration number
+        async function getLastIdentifier(registrationNo) {
+            if (!db) return null;
+            try {
+                const recordsCollection = collection(db, `artifacts/${appId}/public/data/diesel_records`);
+                const q = query(recordsCollection,
+                                where("registrationNo", "==", registrationNo),
+                                orderBy("timestamp", "desc"),
+                                limit(1));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const lastRecord = querySnapshot.docs[0].data();
+                    return parseFloat(lastRecord.vehicleIdentifier);
+                }
+                return null;
+            } catch (error) {
+                console.error("Error fetching last vehicle identifier:", error);
+                return null;
+            }
+        }
+
+        // Function to get the last Bowser Meter Closing reading for a specific vehicle
+        async function getLastBowserMeterClosingForVehicle(registrationNo) {
+            if (!db) return null;
+            try {
+                const recordsCollection = collection(db, `artifacts/${appId}/public/data/diesel_records`);
+                const q = query(recordsCollection,
+                                where("registrationNo", "==", registrationNo),
+                                orderBy("timestamp", "desc"),
+                                limit(1));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const lastRecord = querySnapshot.docs[0].data();
+                    return parseFloat(lastRecord.bowserMeterClosing);
+                }
+                return null; // No previous record for this registration number
+            } catch (error) {
+                console.error("Error fetching last bowser meter closing for vehicle:", error);
+                return null;
+            }
+        }
+
+        // Add event listener to registrationNoInput to auto-populate bowserMeterOpening
+        registrationNoInput.addEventListener('blur', async () => {
+            const registrationNo = registrationNoInput.value.trim().toUpperCase();
+            if (registrationNo) {
+                const lastClosing = await getLastBowserMeterClosingForVehicle(registrationNo);
+                if (lastClosing !== null) {
+                    bowserMeterOpeningInput.value = lastClosing.toFixed(2);
+                } else {
+                    bowserMeterOpeningInput.value = ''; // Clear if no previous reading for this vehicle
+                }
+            } else {
+                bowserMeterOpeningInput.value = ''; // Clear if registration number is empty
+            }
+        });
+
+
+        // Handle vehicle form submission
+        dieselForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!isAuthReady || !userId) {
+                showMessageBox("Authentication not ready or user ID is missing. Please wait or check Firebase setup.", 'error');
+                return;
+            }
+
+            const bowserMeterOpening = parseFloat(bowserMeterOpeningInput.value);
+            const bowserMeterClosing = parseFloat(bowserMeterClosingInput.value);
+            const vehicleType = document.querySelector('input[name="vehicleType"]:checked').value;
+            const newVehicleIdentifier = parseFloat(vehicleIdentifierInput.value);
+            const registrationNo = registrationNoInput.value.trim().toUpperCase();
+            const operatorName = operatorNameInput.value.trim();
+
+            if (isNaN(bowserMeterOpening) || bowserMeterOpening < 0) {
+                showMessageBox("Please enter a valid Bowser Meter Opening Reading.", 'error');
+                return;
+            }
+            if (isNaN(bowserMeterClosing) || bowserMeterClosing < 0) {
+                showMessageBox("Please enter a valid Bowser Meter Closing Reading.", 'error');
+                return;
+            }
+            if (bowserMeterClosing < bowserMeterOpening) {
+                showMessageBox("Bowser Meter Closing Reading cannot be less than Opening Reading.", 'error');
+                return;
+            }
+
+            const calculatedDieselAmount = bowserMeterClosing - bowserMeterOpening;
+
+            if (isNaN(newVehicleIdentifier) || newVehicleIdentifier < 0) {
+                showMessageBox("Please enter a valid vehicle identifier.", 'error');
+                return;
+            }
+            if (!registrationNo) {
+                showMessageBox("Please enter the registration number.", 'error');
+                return;
+            }
+            if (!operatorName) {
+                showMessageBox("Please enter the operator's name.", 'error');
+                return;
+            }
+
+            let identifierDifference = 0;
+            const lastVehicleIdentifier = await getLastIdentifier(registrationNo);
+
+            if (lastVehicleIdentifier !== null) {
+                if (newVehicleIdentifier < lastVehicleIdentifier) {
+                    showMessageBox("New identifier cannot be less than the previous one for this vehicle. Please check your entry.", 'error');
+                    return;
+                }
+                identifierDifference = newVehicleIdentifier - lastVehicleIdentifier;
+            } else {
+                identifierDifference = newVehicleIdentifier; // First entry for this vehicle
+            }
+
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/diesel_records`), {
+                    dieselAmount: calculatedDieselAmount, // Now calculated
+                    bowserMeterOpening: bowserMeterOpening, // Store for reference
+                    bowserMeterClosing: bowserMeterClosing, // Store for reference
+                    vehicleType: vehicleType,
+                    vehicleIdentifier: newVehicleIdentifier,
+                    identifierDifference: identifierDifference,
+                    registrationNo: registrationNo,
+                    operatorName: operatorName,
+                    timestamp: serverTimestamp(),
+                    userId: userId
+                });
+                showMessageBox("Vehicle record added successfully!");
+                dieselForm.reset();
+                vehicleIdentifierLabel.textContent = 'Car Kilometers (km):';
+                vehicleIdentifierInput.placeholder = '';
+            }
+            catch (e) {
+                console.error("Error adding vehicle document: ", e);
+                showMessageBox("Error adding vehicle record. Please try again.", 'error');
+            }
+        });
+
+        // Listen for real-time updates for vehicle records
+        function listenForVehicleRecords() {
+            if (!db || !isAuthReady) {
+                console.log("Firestore not ready or authenticated for vehicle records. Skipping listener.");
+                return;
+            }
+            const q = query(collection(db, `artifacts/${appId}/public/data/diesel_records`), orderBy("timestamp", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                const records = [];
+                snapshot.forEach((doc) => {
+                    records.push({ id: doc.id, ...doc.data() });
+                });
+                currentVehicleRecords = records;
+                displayVehicleRecords(records);
+                updateStats(records); // Call updateStats whenever records are updated
+                updateStatsByRegistration(records); // Call updateStatsByRegistration
+            }, (error) => {
+                console.error("Error listening to vehicle records:", error);
+                showMessageBox("Error loading vehicle records. Please refresh.", 'error');
+            });
+        }
+
+        // Function to display vehicle records in the table
+        function displayVehicleRecords(records) {
+            recordsTableBody.innerHTML = '';
+
+            if (records.length === 0) {
+                noRecordsMessage.classList.remove('hidden');
+                return;
+            } else {
+                noRecordsMessage.classList.add('hidden');
+            }
+
+            records.forEach(record => {
+                const row = recordsTableBody.insertRow();
+                const dateTime = record.timestamp ? new Date(record.timestamp.toDate()).toLocaleString() : 'N/A';
+                const identifierUnit = record.vehicleType === 'car' ? 'km' : 'hours';
+
+                row.innerHTML = `
+                    <td>${dateTime}</td>
+                    <td>${record.operatorName}</td>
+                    <td>${record.vehicleType.charAt(0).toUpperCase() + record.vehicleType.slice(1)}</td>
+                    <td>${record.vehicleIdentifier !== undefined ? record.vehicleIdentifier.toFixed(2) : 'N/A'} ${identifierUnit}</td>
+                    <td>${record.identifierDifference !== undefined ? record.identifierDifference.toFixed(2) : 'N/A'} ${identifierUnit}</td>
+                    <td>${record.registrationNo || 'N/A'}</td>
+                    <td>${record.bowserMeterOpening !== undefined ? record.bowserMeterOpening.toFixed(2) : 'N/A'} L</td>
+                    <td>${record.bowserMeterClosing !== undefined ? record.bowserMeterClosing.toFixed(2) : 'N/A'} L</td>
+                    <td>${record.dieselAmount !== undefined ? record.dieselAmount.toFixed(2) : 'N/A'} L</td>
+                `;
+            });
+        }
+
+        // --- Overall Stats Calculation and Display ---
+        function updateStats(records) {
+            let totalDiesel = 0;
+            let totalKm = 0;
+            let totalHours = 0;
+            let totalFills = records.length;
+
+            records.forEach(record => {
+                if (record.dieselAmount !== undefined && !isNaN(record.dieselAmount)) {
+                    totalDiesel += record.dieselAmount;
+                }
+                if (record.identifierDifference !== undefined && !isNaN(record.identifierDifference)) {
+                    if (record.vehicleType === 'car') {
+                        totalKm += record.identifierDifference;
+                    } else if (record.vehicleType === 'forklift') {
+                        totalHours += record.identifierDifference;
+                    }
+                }
+            });
+
+            const averageDiesel = totalFills > 0 ? (totalDiesel / totalFills) : 0;
+
+            totalDieselDispensedSpan.textContent = `${totalDiesel.toFixed(2)} L`;
+            totalVehicleFillsSpan.textContent = totalFills.toString();
+            averageDieselPerFillSpan.textContent = `${averageDiesel.toFixed(2)} L`;
+            totalKmDrivenSpan.textContent = `${totalKm.toFixed(2)} km`;
+            totalHoursRunSpan.textContent = `${totalHours.toFixed(2)} hours`;
+        }
+
+        // --- Stats by Registration Number Calculation and Display ---
+        function updateStatsByRegistration(records) {
+            statsByRegistrationDiv.innerHTML = ''; // Clear previous content
+
+            if (records.length === 0) {
+                noRegistrationStatsMessage.classList.remove('hidden');
+                return;
+            } else {
+                noRegistrationStatsMessage.classList.add('hidden');
+            }
+
+            const statsMap = new Map(); // Key: registrationNo, Value: { totalDiesel, totalFills, totalKm, totalHours }
+
+            records.forEach(record => {
+                const regNo = record.registrationNo;
+                if (!regNo) return; // Skip if no registration number
+
+                if (!statsMap.has(regNo)) {
+                    statsMap.set(regNo, {
+                        totalDiesel: 0,
+                        totalFills: 0,
+                        totalKm: 0,
+                        totalHours: 0
+                    });
+                }
+
+                const regStats = statsMap.get(regNo);
+                if (record.dieselAmount !== undefined && !isNaN(record.dieselAmount)) {
+                    regStats.totalDiesel += record.dieselAmount;
+                }
+                if (record.identifierDifference !== undefined && !isNaN(record.identifierDifference)) {
+                    if (record.vehicleType === 'car') {
+                        regStats.totalKm += record.identifierDifference;
+                    } else if (record.vehicleType === 'forklift') {
+                        regStats.totalHours += record.identifierDifference;
+                    }
+                }
+                regStats.totalFills++;
+            });
+
+            // Convert map to array and sort by registration number
+            const sortedRegStats = Array.from(statsMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+            sortedRegStats.forEach(([regNo, stats]) => {
+                const averageDiesel = stats.totalFills > 0 ? (stats.totalDiesel / stats.totalFills) : 0;
+
+                const cardHtml = `
+                    <div class="registration-stats-card">
+                        <h4>${regNo}</h4>
+                        <p><strong>Total Diesel:</strong> ${stats.totalDiesel.toFixed(2)} L</p>
+                        <p><strong>Number of Fills:</strong> ${stats.totalFills}</p>
+                        <p><strong>Average Diesel per Fill:</strong> ${averageDiesel.toFixed(2)} L</p>
+                        ${stats.totalKm > 0 ? `<p><strong>Total Kilometers Driven:</strong> ${stats.totalKm.toFixed(2)} km</p>` : ''}
+                        ${stats.totalHours > 0 ? `<p><strong>Total Hours Run:</strong> ${stats.totalHours.toFixed(2)} hours</p>` : ''}
+                    </div>
+                `;
+                statsByRegistrationDiv.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+
+        // --- Export Functions ---
+
+        // Export Vehicle Data to CSV
+        exportVehicleCsvBtn.addEventListener('click', () => {
+            if (currentVehicleRecords.length === 0) {
+                showMessageBox("No vehicle records to export.", 'error');
+                return;
+            }
+            const headers = ["Date/Time", "Operator", "Vehicle Type", "Total Odometer/Hours", "Diff. Odometer/Hours", "Registration No.", "Opening Meter (L)", "Closing Meter (L)", "Diesel (L)"];
+            const rows = currentVehicleRecords.map(record => {
+                const dateTime = record.timestamp ? new Date(record.timestamp.toDate()).toLocaleString() : 'N/A';
+                const totalIdentifier = `${record.vehicleIdentifier !== undefined ? record.vehicleIdentifier.toFixed(2) : 'N/A'} ${record.vehicleType === 'car' ? 'km' : 'hours'}`;
+                const diffIdentifier = `${record.identifierDifference !== undefined ? record.identifierDifference.toFixed(2) : 'N/A'} ${record.vehicleType === 'car' ? 'km' : 'hours'}`;
+                return [
+                    `"${dateTime}"`,
+                    `"${record.operatorName}"`,
+                    `"${record.vehicleType.charAt(0).toUpperCase() + record.vehicleType.slice(1)}"`,
+                    `"${totalIdentifier}"`,
+                    `"${diffIdentifier}"`,
+                    `"${record.registrationNo || 'N/A'}"`,
+                    `"${record.bowserMeterOpening !== undefined ? record.bowserMeterOpening.toFixed(2) : 'N/A'}"`,
+                    `"${record.bowserMeterClosing !== undefined ? record.bowserMeterClosing.toFixed(2) : 'N/A'}"`,
+                    `"${record.dieselAmount !== undefined ? record.dieselAmount.toFixed(2) : 'N/A'}"` // Use calculated dieselAmount
+                ].join(',');
+            });
+            const csvContent = [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'vehicle_diesel_records.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showMessageBox("Vehicle records exported to CSV!");
+        });
+
+        // Export Vehicle Data to PDF
+        exportVehiclePdfBtn.addEventListener('click', () => {
+            if (currentVehicleRecords.length === 0) {
+                showMessageBox("No vehicle records to export.", 'error');
+                return;
+            }
+            if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+                showMessageBox("PDF export library not loaded. Please try again.", 'error');
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape'); // Changed to landscape for more columns
+            const columns = [
+                { header: 'Date/Time', dataKey: 'dateTime' },
+                { header: 'Operator', dataKey: 'operatorName' },
+                { header: 'Vehicle Type', dataKey: 'vehicleType' },
+                { header: 'Total Odo/Hours', dataKey: 'totalIdentifier' },
+                { header: 'Diff Odo/Hours', dataKey: 'diffIdentifier' },
+                { header: 'Registration No.', dataKey: 'registrationNo' },
+                { header: 'Opening Meter (L)', dataKey: 'bowserOpening' },
+                { header: 'Closing Meter (L)', dataKey: 'bowserClosing' },
+                { header: 'Diesel (L)', dataKey: 'dieselAmount' }
+            ];
+            const data = currentVehicleRecords.map(record => {
+                const dateTime = record.timestamp ? new Date(record.timestamp.toDate()).toLocaleString() : 'N/A';
+                const totalIdentifier = `${record.vehicleIdentifier !== undefined ? record.vehicleIdentifier.toFixed(2) : 'N/A'} ${record.vehicleType === 'car' ? 'km' : 'hours'}`;
+                const diffIdentifier = `${record.identifierDifference !== undefined ? record.identifierDifference.toFixed(2) : 'N/A'} ${record.vehicleType === 'car' ? 'km' : 'hours'}`;
+                return {
+                    dateTime: dateTime,
+                    operatorName: record.operatorName,
+                    vehicleType: record.vehicleType.charAt(0).toUpperCase() + record.vehicleType.slice(1),
+                    totalIdentifier: totalIdentifier,
+                    diffIdentifier: diffIdentifier,
+                    registrationNo: record.registrationNo || 'N/A',
+                    bowserOpening: record.bowserMeterOpening !== undefined ? record.bowserMeterOpening.toFixed(2) : 'N/A',
+                    bowserClosing: record.bowserMeterClosing !== undefined ? record.bowserMeterClosing.toFixed(2) : 'N/A',
+                    dieselAmount: record.dieselAmount !== undefined ? record.dieselAmount.toFixed(2) : 'N/A' // Use calculated dieselAmount
+                };
+            });
+            doc.text("Vehicle Diesel Records", 14, 20);
+            doc.autoTable({
+                startY: 30,
+                head: [columns.map(col => col.header)],
+                body: data.map(row => columns.map(col => row[col.dataKey])),
+                theme: 'striped',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+                margin: { top: 25 }
+            });
+            doc.save('vehicle_diesel_records.pdf');
+            showMessageBox("Vehicle records exported to PDF!");
+        });
+
+        // --- Clear All Data Functionality ---
+
+        // Show confirmation modal when "Clear All Data" button is clicked
+        clearAllVehicleDataBtn.addEventListener('click', () => {
+            if (currentVehicleRecords.length === 0) {
+                showMessageBox("No vehicle records to clear.", 'error');
+                return;
+            }
+            collectionToDelete = `artifacts/${appId}/public/data/diesel_records`;
+            modalTitle.textContent = "Confirm Vehicle Data Deletion";
+            modalMessage.textContent = "Are you sure you want to delete ALL vehicle diesel records? This action cannot be undone.";
+            confirmationModal.classList.add('show');
+        });
+
+        // Handle confirmation of deletion
+        confirmDeleteBtn.addEventListener('click', async () => {
+            confirmationModal.classList.remove('show');
+            if (!isAuthReady || !db || !collectionToDelete) {
+                showMessageBox("Database not ready or collection to delete is not specified.", 'error');
+                return;
+            }
+
+            try {
+                const recordsCollectionRef = collection(db, collectionToDelete);
+                const snapshot = await getDocs(recordsCollectionRef);
+
+                if (snapshot.empty) {
+                    showMessageBox("No records to clear in the specified collection.", 'error');
+                    return;
+                }
+
+                const deletePromises = [];
+                snapshot.forEach((d) => {
+                    deletePromises.push(deleteDoc(doc(db, collectionToDelete, d.id)));
+                });
+
+                await Promise.all(deletePromises);
+                showMessageBox(`All records from ${collectionToDelete.includes('diesel_records') ? 'vehicle' : 'bowser'} cleared successfully!`, 'success');
+                collectionToDelete = ''; // Reset
+            } catch (error) {
+                console.error("Error clearing all documents: ", error);
+                showMessageBox("Error clearing records. Please try again.", 'error');
+            }
+        });
+
+        // Handle cancellation of deletion
+        cancelDeleteBtn.addEventListener('click', () => {
+            confirmationModal.classList.remove('show');
+            showMessageBox("Data clearing cancelled.", 'info');
+            collectionToDelete = ''; // Reset
+        });
+
+    </script>
+</body>
+</html>
